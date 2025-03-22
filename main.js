@@ -76,6 +76,33 @@ function aboutWindow() {
   })
 }
 
+// Janela Cadastro
+let cadastro
+function cadastroWindow() {
+  nativeTheme.themeSource = 'light'
+  // obter a janela principal
+  const mainWindow = BrowserWindow.getFocusedWindow()
+  // validação (se existir a janela principal)
+  if (mainWindow) {
+    cadastro = new BrowserWindow({
+      width: 400,
+      height: 270,
+      autoHideMenuBar: true,
+      resizable: false,
+      minimizable: false,
+      // estabelecer uma relação hierárquica entre janelas
+      parent: mainWindow,
+      // criar uma janela modal (só retorna a principal quando encerrada)
+      modal: true,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js')
+      }
+    })
+  }
+
+  cadastro.loadFile('./src/views/cadastro.html')  
+}
+
 // janela nota
 let note
 function noteWindow() {
@@ -150,12 +177,12 @@ app.commandLine.appendSwitch('log-level', '3')
 // template do menu
 const template = [
   {
-    label: 'Notas',
+    label: 'Cliente',
     submenu: [
       {
-        label: 'Criar nota',
+        label: 'Cadastrar Cliente',
         accelerator: 'Ctrl+N',
-        click: () => noteWindow()
+        click: () => cadastroWindow()
       },
       {
         type: 'separator'
