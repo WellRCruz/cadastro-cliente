@@ -85,8 +85,8 @@ function cadastroWindow() {
   // validação (se existir a janela principal)
   if (mainWindow) {
     cadastro = new BrowserWindow({
-      width: 400,
-      height: 270,
+      width: 1010,
+      height: 720,
       autoHideMenuBar: true,
       resizable: false,
       minimizable: false,
