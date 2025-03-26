@@ -66,12 +66,15 @@ footer p {
 #sobre h3 {
     color: var(--cinza);
     font-weight: 500;
+    height: 15px;
+    width: 50px;  /* Define o tamanho da largura da imagem */
 }
 
 /* Janela Nova nota */
 .novaNota {
     display: flex;
     flex-direction: column;
+    
 }
 
 .novaNota input {
