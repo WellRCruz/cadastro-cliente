@@ -50,8 +50,8 @@ function aboutWindow() {
   // validação (se existir a janela principal)
   if (mainWindow) {
     about = new BrowserWindow({
-      width: 300,
-      height: 200,
+      width: 400,
+      height: 300,
       autoHideMenuBar: true,
       resizable: false,
       minimizable: false,
@@ -177,7 +177,7 @@ app.commandLine.appendSwitch('log-level', '3')
 // template do menu
 const template = [
   {
-    label: 'Cliente',
+    label: 'Cadastro',
     submenu: [
       {
         label: 'Cadastrar Cliente',
@@ -194,6 +194,17 @@ const template = [
       }
     ]
   },
+
+  {
+    label: 'Relatório',
+    submenu: [
+      {
+        label: 'Clientes',
+      },
+      
+    ]
+  },
+
   {
     label: 'Ferramentas',
     submenu: [
