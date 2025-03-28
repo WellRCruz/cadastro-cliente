@@ -50,8 +50,8 @@ function aboutWindow() {
   // validação (se existir a janela principal)
   if (mainWindow) {
     about = new BrowserWindow({
-      width: 400,
-      height: 300,
+      width: 300,
+      height: 233,
       autoHideMenuBar: true,
       resizable: false,
       minimizable: false,
