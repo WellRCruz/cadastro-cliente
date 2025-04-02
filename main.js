@@ -86,7 +86,7 @@ function cadastroWindow() {
   if (mainWindow) {
     cadastro = new BrowserWindow({
       width: 1050,
-      height: 510,
+      height: 610,
       autoHideMenuBar: true,
       resizable: false,
       minimizable: false,
@@ -238,7 +238,7 @@ const template = [
     submenu: [
       {
         label: 'Repositório',
-        click: () => shell.openExternal('https://github.com/WellRCruz/Projeto-Parte-1.git')
+        click: () => shell.openExternal('https://github.com/WellRCruz/cadastro-cliente.git')
       },
       {
         label: 'Sobre',
@@ -247,3 +247,32 @@ const template = [
     ]
   }
 ]
+
+// ===============================================
+// ================ CRUD CREATE ==================
+
+// Recebimento do objeto que contem os dados da nota
+ipcMain.on('create-note', async (event, stickyNote) => {
+  // IMPORTANTE ! Teste de recebimento do objeto - Passo 2
+  console.log(stickyNote)
+
+  // Uso do try-catch para tratamento de exceções 
+  try {
+    
+  // Criar uma nova estrutra de dados para salvar no banco
+  // Atenção! Os atributos da estrutura precisam ser idênticos ao modelo e os valores são obtidos através do objeto stickyNote
+  const newNote = noteModel ({
+    texto: stickyNote.textNote,
+    cor: stickyNote.colorNote
+  })
+
+  // Salvar a nota no banco de dados (Passo 3: fluxo)
+  newNote.save()
+
+  } catch (error) {
+    console.log(error)
+  }
+
+})
+// ============== FIM CRUD CREATE ================
+// ===============================================

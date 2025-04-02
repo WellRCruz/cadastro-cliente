@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WellRCruz/Projeto-Parte-1.git"
+    "url": "git+https://github.com/WellRCruz/cadastro-cliente.git"
   },
   "author": "Wellington R. Cruz",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/WellRCruz/Projeto-Parte-1/issues"
+    "url": "https://github.com/WellRCruz/cadastro-cliente/issues"
   },
-  "homepage": "https://github.com/WellRCruz/Projeto-Parte-1#readme",
+  "homepage": "https://github.com/WellRCruz/cadastro-cliente#readme",
   "devDependencies": {
     "electron": "^34.3.0"
   },

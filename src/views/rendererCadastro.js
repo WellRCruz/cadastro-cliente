@@ -1,9 +1,7 @@
 /**
  * Cadastro de usuários
- * @author Vitor de Assis
+ * @author Wellington R. Cruz
  */
-
-
 
 // Buscas CEP
 function buscarEndereco() {
@@ -67,23 +65,13 @@ function checarCPF() {
     }
 }
 
+let dadosCli = document.getElementById('dadosCli')
+let cliNome = document.getElementById("inputNome")
 
-// Limpar
-function limpar() {
-    document.getElementById('inputNome').value = ""
-    document.getElementById('InputRG').value = ""
-    document.getElementById('inputCPF').value = ""
-    document.getElementById('inputSexo').value = ""
-    document.getElementById('inputDataNasc').value = ""
-    document.getElementById('inputTelefone').value = ""
-    document.getElementById('inputTelefone2').value = ""
-    document.getElementById('inputEmail4').value = ""
-    document.getElementById('inputPassword4').value = ""
-    document.getElementById('inputCep').value = ""
-    document.getElementById('InputEndereco').value = ""
-    document.getElementById('inputNum').value = ""
-    document.getElementById('inputComplemento').value = ""
-    document.getElementById('inputBairro').value = ""
-    document.getElementById('inputCidade').value = ""
-    document.getElementById('inputEstado').value = ""
-}
+console.log(cliNome)
+
+dadosCli.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    console.log(cliNome.value)
+
+})
