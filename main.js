@@ -123,7 +123,7 @@ function cadastroWindow() {
     })
 
   }
-  
+
   cadastro.loadFile('./src/views/cadastro.html')
 
 }
@@ -230,7 +230,7 @@ const template = [
         label: "Repositório",
         click: () =>
           shell.openExternal(
-            "https://github.com/vitorapassos/avaliacaocadastrodecliente.git"
+            "https://github.com/WellRCruz/cadastro-cliente.git"
           ),
       },
       {
