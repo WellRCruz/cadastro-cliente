@@ -1,278 +1,402 @@
-console.log("Electron - Processo principal")
-
-// importação dos recursos do framework
-// app (aplicação)
-// BrowserWindow (criação da janela)
-// nativeTheme (definir tema claro ou escuro)
-// Menu (definir um menu personalizado)
-// shell (acessar links externos no navegador padrão)
-// ipcMain (permite estabelecer uma comunicação entre processos (IPC) main.js <=> renderer.js)
-const { app, BrowserWindow, nativeTheme, Menu, shell, ipcMain } = require('electron/main')
-
+/**
+ * Main JS cadastro de cliente com Electron
+ * @Author Wellington R. Cruz
+ */
+ 
+//const { pipeline } = require('responselike')
+ 
+console.log("Executando processo principal");
+ 
+// dialog: modulo electron para ativar a caixa de mensagens
+// shell: acessar links e aplicações externas
+const {
+  app,
+  BrowserWindow,
+  nativeTheme,
+  Menu,
+  shell,
+  ipcMain,
+  dialog,
+} = require("electron/main");
+ 
 // Ativação do preload.js (importação do path)
-const path = require('node:path')
-
-// Importação dos métodos conectar e desconectar (módulo de conexão)
-const { conectar, desconectar } = require('./database.js')
-
-// Janela principal
-let win
+const path = require("node:path");
+ 
+//  Importação dos métodos conectar e desconectar (módulo de conexão)
+const { conectar, desconectar } = require("./database.js");
+ 
+// Model Cliente
+const clienteModel = require("./src/models/Clientes.js");
+ 
+// Importação da biblioteca nativa do JS para manipular arquivos
+const fs = require("fs");
+ 
+// Importação do pacote JSPDF (arquivos PDF) npm install jspdf
+const { jspdf, default: jsPDF } = require("jspdf");
+ 
+// Criando a janela principal
+let win;
+ 
 const createWindow = () => {
-  // definindo o tema da janela claro ou ecuro
-  nativeTheme.themeSource = 'light'
+  nativeTheme.themeSource = "dark";
   win = new BrowserWindow({
     width: 1010,
     height: 720,
-    //frame: false,
-    //resizable: false,
-    //minimizable: false,
-    //closable: false,
-    //autoHideMenuBar: true,
+ 
+    // Preload
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
-    }
-  })
-
-  // Carregar o menu personalizado
-  // Atenção! Antes importar o recurso Menu
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
-
-  // carregar o documento html na janela
-  win.loadFile('./src/views/index.html')
-}
-
-// janela sobre
-let about
+      preload: path.join(__dirname, "preload.js"),
+    },
+  });
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  win.loadFile("./src/views/index.html");
+};
+ 
+// Janela Sobre
+let about;
 function aboutWindow() {
-  nativeTheme.themeSource = 'light'
-  // obter a janela principal
-  const mainWindow = BrowserWindow.getFocusedWindow()
-  // validação (se existir a janela principal)
+  nativeTheme.themeSource = "light";
+ 
+  const mainWindow = BrowserWindow.getFocusedWindow();
+ 
   if (mainWindow) {
     about = new BrowserWindow({
-      width: 300,
-      height: 233,
+      width: 500,
+      height: 260,
       autoHideMenuBar: true,
       resizable: false,
       minimizable: false,
-      // estabelecer uma relação hierárquica entre janelas
       parent: mainWindow,
-      // criar uma janela modal (só retorna a principal quando encerrada)
       modal: true,
+      // Preload
       webPreferences: {
-        preload: path.join(__dirname, 'preload.js')
-      }
-    })
+        preload: path.join(__dirname, "preload.js"),
+      },
+    });
   }
-
-  about.loadFile('./src/views/sobre.html')
-
-  //recebimento da mensagem do renderizador da tela sobre para fechar a janela usando o botão OK
-  ipcMain.on('about-exit', () => {
-    //validação (se existir a janela e ela não estiver sido destruída, fechar)
-    if (about && !about.isDestroyed()) {
-      about.close()
-    }   
-  })
+ 
+  about.loadFile("./src/views/sobre.html");
 }
-
+ 
 // Janela Cadastro
+
 let cadastro
+
 function cadastroWindow() {
+
   nativeTheme.themeSource = 'light'
+
   // obter a janela principal
+
   const mainWindow = BrowserWindow.getFocusedWindow()
+
   // validação (se existir a janela principal)
+
   if (mainWindow) {
+
     cadastro = new BrowserWindow({
+
       width: 1050,
+
       height: 610,
+
       autoHideMenuBar: true,
+
       resizable: false,
+
       minimizable: false,
+
       // estabelecer uma relação hierárquica entre janelas
+
       parent: mainWindow,
+
       // criar uma janela modal (só retorna a principal quando encerrada)
+
       modal: true,
+
       webPreferences: {
+
         preload: path.join(__dirname, 'preload.js')
+
       }
+
     })
+
   }
+  
+  cadastro.loadFile('./src/views/cadastro.html')
 
-  cadastro.loadFile('./src/views/cadastro.html')  
 }
-
-// janela nota
-let note
-function noteWindow() {
-  nativeTheme.themeSource = 'light'
-  // obter a janela principal
-  const mainWindow = BrowserWindow.getFocusedWindow()
-  // validação (se existir a janela principal)
-  if (mainWindow) {
-    note = new BrowserWindow({
-      width: 400,
-      height: 270,
-      autoHideMenuBar: true,
-      resizable: false,
-      minimizable: false,
-      // estabelecer uma relação hierárquica entre janelas
-      parent: mainWindow,
-      // criar uma janela modal (só retorna a principal quando encerrada)
-      modal: true,
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js')
-      }
-    })
-  }
-
-  note.loadFile('./src/views/nota.html')  
-}
-
-// inicialização da aplicação (assíncronismo)
+ 
+// Inicialização
 app.whenReady().then(() => {
-  createWindow()
-
+  createWindow();
+ 
   // Melhor local para estabelecer a conexão com o banco de dados
   // No MongoDB é mais eficiente manter uma única conexão aberta durante todo o tempo de vida do aplicativo e encerrar a conexão quando o aplicativo for finalizado
   // ipcMain.on (receber mensagem)
   // db-connect (rótulo da mensagem)
-  ipcMain.on('db-connect', async (event) => {
-    //a linha abaixo estabelece a conexão com o banco de dados e verifica se foi conectado com sucesso (return true)
-    const conectado = await conectar()
-    if (conectado) {
-      // enviar ao renderizador uma mensagem para trocar a imagem do ícone do status do banco de dados (criar um delay de 0.5 ou 1s para sincronização com a nuvem)
-      setTimeout(() => {
-        // enviar ao renderizador a mensagem "conectado"
-        // db-status (IPC - comunicação entre processos - preload.js)
-        event.reply('db-status', "conectado")
-      }, 500) //500ms = 0.5s
-    }
-  })
-
-  // só ativar a janela principal se nenhuma outra estiver ativa
-  app.on('activate', () => {
+  ipcMain.on("db-connect", async (event) => {
+    // a linha abaixo estabelece a conexão com o banco de dados
+    await conectar();
+    // enviar ao renderizador uma mensagem para trocar a imagem do icone do status do banco de dados (criar um delay de 0.5 ou 1s para sincronização com a nuvem)
+    setTimeout(() => {
+      // Enviar ao renderizador a mensagem "conectado"
+      // db-status (IPC - Comunicaçao entre processos - preload.js)
+      event.reply("db-status", "conectado");
+    }, 500); // 500ms = 0.5s
+  });
+ 
+  // Só ativar a janela principal se nenuhma outra estiver ativa
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow()
+      createWindow();
     }
-  })
-})
-
-// se o sistem não for MAC encerrar a aplicação quando a janela for fechada
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
+  });
+});
+ 
+// Se o sistema não for MAC encerrar a aplicação quando a janela for fechada
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
   }
-})
-
-// IMPORTANTE! Desconectar do banco de dados quando a aplicação for finalizada
-app.on('before-quit', async () => {
-  await desconectar()
-})
-
-// Reduzir a verbosidade de logs não críticos (devtools)
-app.commandLine.appendSwitch('log-level', '3')
-
-// template do menu
+});
+ 
+// IMPORTANTE!!! Desconectar do banco de dados quando a aplicação for finalizada
+app.on("before-quit", async () => {
+  await desconectar();
+});
+ 
+// Reduzir a verbozidade de logs não críticos (devtools)
+app.commandLine.appendSwitch("log-level", "3");
+ 
+// Menu
 const template = [
   {
-    label: 'Cadastro',
+    label: "Cadastro",
     submenu: [
       {
-        label: 'Cadastrar Cliente',
-        accelerator: 'Ctrl+N',
-        click: () => cadastroWindow()
+        label: "Cadastrar",
+        click: () => cadastroWindow(),
       },
       {
-        type: 'separator'
+        label: "Sair",
+        accelerator: "Alt+F4",
+        click: () => app.quit(),
       },
-      {
-        label: 'Sair',
-        accelerator: 'Alt+F4',
-        click: () => app.quit()
-      }
-    ]
-  },
-
-  {
-    label: 'Relatório',
-    submenu: [
-      {
-        label: 'Clientes',
-      },
-      
-    ]
-  },
-
-  {
-    label: 'Ferramentas',
-    submenu: [
-      {
-        label: 'Aplicar zoom',
-        role: 'zoomIn'
-      },
-      {
-        label: 'Reduzir',
-        role: 'zoomOut'
-      },
-      {
-        label: 'Restaurar o zoom padrão',
-        role: 'resetZoom'
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Recarregar',
-        role: 'reload'
-      },
-      {
-        label: 'DevTools',
-        role: 'toggleDevTools'
-      }
-    ]
+    ],
   },
   {
-    label: 'Ajuda',
+    label: "Relatório",
     submenu: [
       {
-        label: 'Repositório',
-        click: () => shell.openExternal('https://github.com/WellRCruz/cadastro-cliente.git')
+        label: "Clientes",
+        click: () => relatorioClientes(),
+      },
+    ],
+  },
+  {
+    label: "Ferramentas",
+    submenu: [
+      {
+        label: "Aplicar Zoom",
+        role: "ZoomIn",
       },
       {
-        label: 'Sobre',
-        click: () => aboutWindow()
-      }
-    ]
-  }
-]
-
+        label: "Reduzir Zoom",
+        role: "ZoomOut",
+      },
+      {
+        label: "Restaurar Zoom",
+        role: "resetZoom",
+      },
+      {
+        type: "separator",
+      },
+      {
+        label: "Recarregar",
+        role: "reload",
+      },
+      {
+        label: "DevTools",
+        role: "ToggleDevTools",
+      },
+    ],
+  },
+  {
+    label: "Ajuda",
+    submenu: [
+      {
+        label: "Repositório",
+        click: () =>
+          shell.openExternal(
+            "https://github.com/vitorapassos/avaliacaocadastrodecliente.git"
+          ),
+      },
+      {
+        label: "Sobre",
+        click: () => aboutWindow(),
+      },
+    ],
+  },
+];
+ 
 // ===============================================
 // ================ CRUD CREATE ==================
-
-// Recebimento do objeto que contem os dados da nota
-ipcMain.on('create-note', async (event, stickyNote) => {
-  // IMPORTANTE ! Teste de recebimento do objeto - Passo 2
-  console.log(stickyNote)
-
-  // Uso do try-catch para tratamento de exceções 
+ 
+ipcMain.on("create-cliente", async (event, cliente) => {
+  console.log(cliente);
+ 
   try {
-    
-  // Criar uma nova estrutra de dados para salvar no banco
-  // Atenção! Os atributos da estrutura precisam ser idênticos ao modelo e os valores são obtidos através do objeto stickyNote
-  const newNote = noteModel ({
-    texto: stickyNote.textNote,
-    cor: stickyNote.colorNote
-  })
-
-  // Salvar a nota no banco de dados (Passo 3: fluxo)
-  newNote.save()
-
+    const novoCliente = clienteModel({
+      nome: cliente.nomeCli,
+      rg: cliente.rgCli,
+      cpf: cliente.cpfCli,
+      sexo: cliente.sexoCli,
+      dataNascimento: cliente.dataNascCli,
+      telefone: cliente.telefoneCli,
+      telefone2: cliente.telefone2Cli,
+      email: cliente.emailCli,
+      senha: cliente.senhaCli,
+      cep: cliente.cepCli,
+      endereco: cliente.enderecoCli,
+      numero: cliente.numCli,
+      complemento: cliente.complementoCli,
+      bairro: cliente.bairroCli,
+      cidade: cliente.cidadeCli,
+      estado: cliente.estadoCli,
+    });
+    await novoCliente.save();
+ 
+    // Confirmação de cliente adicionado ao banco (dialog)
+    dialog
+      .showMessageBox({
+        type: "info",
+        title: "Aviso",
+        message: "Cliente adicionado com sucesso",
+        buttons: ["OK"],
+      })
+      .then((result) => {
+        // se o botão OK for pressionado
+        if (result.response === 0) {
+          // enviar para o renderizador limpar os campos (preload.js)
+          event.reply("reset-form");
+        }
+      });
   } catch (error) {
-    console.log(error)
+    if (error.code === 11000) {
+      dialog
+        .showMessageBox({
+          type: "error",
+          title: "Atenção!",
+          message: "CPF já cadastrado.\nVerifique o número digitado.",
+          buttons: ["OK"],
+        })
+        .then((result) => {
+          // Se o botão OK for pressionado
+          if (result.response === 0) {
+            // Limpar campo CPF, foco e borda em vermelho
+            event.reply("cpf-duplicated");
+          }
+        });
+    } else {
+      console.log(error);
+    }
   }
-
-})
+});
+ 
 // ============== FIM CRUD CREATE ================
+// ===============================================
+ 
+// ===============================================
+// =========== RELATÓRIO DE CLIENTES =============
+ 
+async function relatorioClientes() {
+  try {
+    // ===========================================
+    //        Confiuração do document PDF
+    // ===========================================
+    // p (portrait), l (landscape)
+    // mm = milimiters
+    // a4 = tamanho
+    // sempre projetar conforme um documento impresso
+    const doc = new jsPDF("p", "mm", "a4");
+ 
+    // inserir data atual no documento
+    const dataAtual = new Date().toLocaleDateString("pt-BR");
+ 
+    // diminuir texto doc.setFontSize() tamanho da fonte em ponto ( = word) pt
+    doc.setFontSize(10);
+    // a linha abaixo escreve um texto no documento
+    doc.text(`Data: ${dataAtual}`, 170, 15); // (x,y (mm))
+    doc.setFontSize(18);
+    doc.text("Relatório de clientes", 15, 30);
+    doc.setFontSize(12);
+    let y = 50; // variável de apoio
+ 
+    // Cabeçalho da tabela
+    doc.text("Nome", 14, y);
+    doc.text("Telefone", 85, y);
+    doc.text("E-mail", 130, y);
+    y += 5;
+ 
+    //desenhar uma linha
+    doc.setLineWidth(0.5);
+    doc.line(10, y, 200, y); // (10 (inicio)___________200 (fim))
+    y += 10;
+ 
+    // ===============================================
+    // Obter a listagem de clientes (ordem alfabética)
+    // ===============================================
+ 
+    const clientes = await clienteModel.find().sort({ nome: 1 });
+ 
+    //    console.log(clientes)
+    // popular o documento pdf com os clientes cadastrados
+    clientes.forEach((c) => {
+      // criar uma nova pagina se Y > 280mm (A4 = 297mm)
+      if (y > 280) {
+        doc.addPage();
+        y = 20; // margem
+ 
+        // Cabeçalho
+        doc.text("Nome", 14, y);
+        doc.text("Telefone", 85, y);
+        doc.text("E-mail", 130, y);
+        y += 5;
+      }
+      doc.text(c.nome, 14, y);
+      doc.text(c.telefone, 85, y);
+      doc.text(c.email, 130, y);
+      y += 10;
+    });
+ 
+    // ============================================
+    //        Numeração automática de páginas
+    // ============================================
+ 
+    const pages = doc.internal.getNumberOfPages();
+    for(let i = 1; i <= pages; i++){
+      doc.setPage(i)
+      doc.setFontSize(10)
+      doc.text(`Página ${i} de ${pages}`, 105,290, {align: 'center'})
+    }
+ 
+    // ============================================
+    // Abrir o arquivo pdf no sistema operacional
+    // ============================================
+ 
+    // Definir o caminho do arquivo temporário e nome do arquivo com extensão .pdf (!!! Importante !!!)
+    const tempDir = app.getPath("temp");
+    const filePath = path.join(tempDir, "clientes.pdf");
+    // salvar temporariamente o arquivo
+    doc.save(filePath);
+    // abrir o arquivo no aplicativo padrão de leitura de pdf do computador do usuário
+    shell.openPath(filePath);
+  } catch (error) {
+    console.log(error);
+  }
+}
+ 
+// ========= FIM RELATÓRIO DE CLIENTES ===========
 // ===============================================
