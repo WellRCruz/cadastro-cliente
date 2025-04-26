@@ -28,9 +28,11 @@ let arrayClient = []
 
 // Iniciar a janela de clientes alterando as propriedades de alguns elementos
 document.addEventListener('DOMContentLoaded', () => {
-    // Desativar os botões
+    // Desativar os botões editar e excluir
     btnUpdate.disabled = true
     btnDelete.disabled = true
+    // Ativar botão adicionar
+    btnCreate.disabled = false
     // Foco na busca do cliente
     foco.focus()
 })
@@ -50,7 +52,7 @@ let cityClient = document.getElementById('inputCityClient')
 let ufClient = document.getElementById('inputUFClient')
 
 // ============================================================
-// == Manipulação do Enter ====================================
+// =============== Manipulação do Enter =======================
 
 function teclaEnter(event) {
     if (event.key === "Enter") {
@@ -68,7 +70,7 @@ function restaurarEnter() {
     frmClient.removeEventListener('keydown', teclaEnter)
 }
 
-// == Fim - Manipulação do Enter ==============================
+// ============= Fim - Manipulação do Enter ===================
 // ============================================================
 
 
@@ -158,6 +160,11 @@ function searchName() {
                 ufClient.value = c.ufCliente
                 // restaurar a tecla Enter
                 restaurarEnter()
+                // desativar o botão adicionar
+                btnCreate.disabled = true
+                // ativar os botões editar e excluir
+                btnUpdate.disabled = false
+                btnDelete.disabled = false
             })
         })
     }
